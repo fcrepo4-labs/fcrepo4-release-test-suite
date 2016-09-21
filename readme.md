@@ -35,6 +35,11 @@ mvn clean -Dwaitingtime=3000 test
 mvn clean -Dtest=fusekiTest -Dwaitingtime=3000 test
 ```
 
+### Run tests on a Fedora 4 instance only.
+```
+mvn clean -Dtest=fcrepo4Test test
+```
+
 ## Test Cases
 
 ### authzTest
