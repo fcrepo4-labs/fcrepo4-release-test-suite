@@ -19,7 +19,7 @@
 
 		<properties>
 				<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-				<waitingtime>300000</waitingtime>
+				<waitingtime>600000</waitingtime>
 		</properties>
 
 		<dependencies>
@@ -33,7 +33,7 @@
 				<dependency>
 						<groupId>org.fcrepo.client</groupId>
 						<artifactId>fcrepo-java-client</artifactId>
-						<version>0.2.0</version>
+						<version>0.2.1</version>
 				</dependency>
 				<dependency>
 						<groupId>commons-io</groupId>
