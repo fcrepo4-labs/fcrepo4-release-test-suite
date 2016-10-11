@@ -4,7 +4,7 @@ A set of integration tests that runs against a given version of fcrepo-webapp, S
 
 It is a Java version of [Fedora 4 Tests](https://github.com/fcrepo4-labs/fcrepo4-tests)(shell scripts). This program will create, update and delete resources in the repository, so you may **not** want to use it on a production Fedora server.
 
-Note that there is a time delay for the new Fedora object to be indexed by Solr or Fuseki. Thus you may need to customize the waiting time (Default: 10mins). 
+Note that there is a time delay for the new Fedora object to be indexed by Solr or Fuseki. Thus you may need to customize the waiting time (Default: 1mins). 
 
 ## Configuration 
 
@@ -20,14 +20,14 @@ adminuserpassword=password2
 
 ## To run with Maven:
 
-### Run all tests with default settings
+### Run all tests with default settings on a Fedora 4 vagrant
 ```
-mvn clean test 
+mvn clean -Dtest=vagrantTestSuite test
 ```
 
 ### Run tests with custom waiting time
 ```
-mvn clean -Dwaitingtime=3000 test
+mvn clean -Dtest=vagrantTestSuite -Dwaitingtime=3000 test
 ```
 
 ### Run a single test with custom waiting time
@@ -37,7 +37,7 @@ mvn clean -Dtest=fusekiTest -Dwaitingtime=3000 test
 
 ### Run tests on a Fedora 4 instance only.
 ```
-mvn clean -Dtest=fcrepo4Test test
+mvn clean -Dtest=fcrepo4TestSuite test
 ```
 
 ## Test Cases
