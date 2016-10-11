@@ -19,7 +19,7 @@
 
 		<properties>
 				<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-				<waitingtime>600000</waitingtime>
+				<waitingtime>60000</waitingtime>
 		</properties>
 
 		<dependencies>

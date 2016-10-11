@@ -8,6 +8,6 @@ import org.junit.runners.Suite.SuiteClasses;
 @RunWith(Suite.class)
 @SuiteClasses({ fixityTest.class, indirectTest.class, nestedTest.class, sparqlTest.class, transactionTest.class,
     versionTest.class })
-public class fcrepo4Test {
+public class fcrepo4TestSuite {
 
 }
