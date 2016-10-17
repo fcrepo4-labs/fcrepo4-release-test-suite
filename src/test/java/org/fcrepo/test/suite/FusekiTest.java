@@ -1,7 +1,6 @@
 /**
  *
  */
-
 package org.fcrepo.test.suite;
 
 import static org.junit.Assert.assertEquals;
@@ -11,26 +10,33 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.Properties;
 
-import org.apache.http.HttpStatus;
 import org.fcrepo.client.DeleteBuilder;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
 import org.fcrepo.client.PutBuilder;
+
+import org.apache.http.HttpStatus;
+import org.apache.jena.query.QueryExecution;
+import org.apache.jena.query.QueryExecutionFactory;
+import org.apache.jena.query.QuerySolution;
+import org.apache.jena.query.ResultSet;
+import org.apache.jena.rdf.model.RDFNode;
 import org.junit.Before;
 import org.junit.Test;
+
 
 /**
  * @author ylchen
  * @since 2016-09-06
  */
-public class nestedTest {
+public class FusekiTest {
 
     String fedoraBaseURL;
-
     String fedoraAdminPassword = "";
-
+    String fusekiURL;
     FcrepoClient testClient;
+    int waitingtime;
 
     @Before
     public void setUp() throws IOException {
@@ -42,13 +48,15 @@ public class nestedTest {
 
         p.load(configFile);
         fedoraBaseURL = p.get("fedoraBaseURL").toString();
+        fusekiURL = p.get("fusekiURL").toString();
         fedoraAdminPassword = p.get("fedoraadminpassword").toString();
         testClient = FcrepoClient.client().credentials("fedoraAdmin", fedoraAdminPassword).build();
+        waitingtime = Integer.valueOf(System.getProperty("waitingtime"));
 
     }
 
     @Test
-    public void testNestedCreation() throws IOException, FcrepoOperationFailedException, InterruptedException {
+    public void testFuseki() throws IOException, FcrepoOperationFailedException, InterruptedException {
 
         // Create a container
         final InputStream turtleFile = Thread.currentThread().getContextClassLoader()
@@ -61,39 +69,30 @@ public class nestedTest {
             assertEquals(HttpStatus.SC_CREATED, response.getStatusCode());
         }
 
-        // Create a container in a container
-        final InputStream anotherTurtleFile = Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream("object.ttl");
-        final URI nestedUri = URI.create(fedoraBaseURL + "/object1/object2");
-        try (FcrepoResponse response = new PutBuilder(nestedUri, testClient)
-                .body(anotherTurtleFile, "text/turtle")
-                .perform()) {
-            assertEquals(HttpStatus.SC_CREATED, response.getStatusCode());
+        Thread.sleep(waitingtime);
+        final String query =
+                "SELECT ?subject WHERE { ?subject ?predicate <http://www.w3.org/ns/ldp#Container> . FILTER (?subject = <http://localhost:8080/fcrepo/rest/object1>) }";
+
+        final QueryExecution q = QueryExecutionFactory.sparqlService(fusekiURL,
+                query);
+        final ResultSet results = q.execSelect();
+
+        // Query that container in the Fuseki server
+        while (results.hasNext()) {
+
+            final QuerySolution soln = results.nextSolution();
+            final RDFNode x = soln.get("subject");
+
+            assertEquals("http://localhost:8080/fcrepo/rest/object1", x.toString());
         }
 
-        // Create binary inside a container inside a container
-        final URI nestedBinaryUri = URI.create(fedoraBaseURL + "/object1/object2/picture");
-        final InputStream imageFile = Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream("basic_image.jpg");
-        try (FcrepoResponse response = new PutBuilder(nestedBinaryUri, testClient)
-                .body(imageFile, "image/jpeg")
-                .perform()) {
-            assertEquals(HttpStatus.SC_CREATED, response.getStatusCode());
-        }
-
-        // Delete binary
-        try (FcrepoResponse response = new DeleteBuilder(nestedBinaryUri, testClient)
-                .perform()) {
-            assertEquals(HttpStatus.SC_NO_CONTENT, response.getStatusCode());
-        }
-
-        // Delete container with a container inside it
+        // Delete a container
         try (FcrepoResponse response = new DeleteBuilder(object1Uri, testClient)
                 .perform()) {
             assertEquals(HttpStatus.SC_NO_CONTENT, response.getStatusCode());
         }
 
-        // Delete container with a container inside it permanently
+        // Delete object1 container permanently
         final URI object1TombstoneUri = URI.create(fedoraBaseURL + "/object1/fcr:tombstone");
 
         try (FcrepoResponse response = new DeleteBuilder(object1TombstoneUri, testClient)

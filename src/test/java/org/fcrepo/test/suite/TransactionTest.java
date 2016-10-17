@@ -27,7 +27,7 @@ import org.junit.Test;
  * @author ylchen
  * @since 2016-09-06
  */
-public class transactionTest {
+public class TransactionTest {
 
     String fedoraBaseURL;
 
