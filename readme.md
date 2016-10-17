@@ -22,27 +22,32 @@ adminuserpassword=password2
 
 ### Run all tests with default settings on a Fedora 4 vagrant
 ```
-mvn clean -Dtest=vagrantTestSuite test
+mvn clean -Dtest=VagrantAuthTestSuite test
+```
+
+### Run all tests with FEDORA_AUTH=false setting on a Fedora 4 vagrant
+```
+mvn clean -Dtest=VagrantTestSuite test
 ```
 
 ### Run tests with custom waiting time
 ```
-mvn clean -Dtest=vagrantTestSuite -Dwaitingtime=3000 test
+mvn clean -Dtest=VagrantTestSuite -Dwaitingtime=3000 test
 ```
 
 ### Run a single test with custom waiting time
 ```
-mvn clean -Dtest=fusekiTest -Dwaitingtime=3000 test
+mvn clean -Dtest=FusekiTest -Dwaitingtime=3000 test
 ```
 
 ### Run tests on a Fedora 4 instance only.
 ```
-mvn clean -Dtest=fcrepo4TestSuite test
+mvn clean -Dtest=Fcrepo4TestSuite test
 ```
 
 ## Test Cases
 
-### authzTest
+### AuthzTest
 1. Create a container called **cover**
 2. Patch it to a pcdm:Object
 3. Create a container inside **cover** called **files**
@@ -56,33 +61,33 @@ mvn clean -Dtest=fcrepo4TestSuite test
 11. Verify testadmin can access **cover**
 12. Verify testuser can't access **cover**
 
-### fixityTest
+### FixityTest
 1. Create a binary resource
 2. Get a fixity result for that resource and compare that the SHA-1 hash matches the expected value
 
-### fusekiTest
+### FusekiTest
 1. Create a container
 2. Query that container in the Fuseki server
 
-### indirectTest
+### IndirectTest
 1. Create a pcdm:Object
 2. Create a pcdm:Collection
 3. Create an indirect container "members" inside the pcdm:Collection
 4. Create a proxy object for the pcdm:Object inside the **members** indirectContainer
 5. Verify that the pcdm:Collection has the memberRelation property added pointing to the pcdm:Object
 
-### nestedTest
+### NestedTest
 1. Create a container
 2. Create a container inside the container from step 1
 3. Create a binary inside the container from step 2
 4. Delete the binary
 5. Delete the container from step 1
 
-### solrTest
+### SolrTest
 1. Create a container
 2. Search that container in the Solr server
 
-### sparqlTest
+### SparqlTest
 1. Create a container
 2. Set the dc:title of the container with a Patch request
 3. Update the dc:title of the container with a Patch request
@@ -90,7 +95,7 @@ mvn clean -Dtest=fcrepo4TestSuite test
 2. Set the dc:title of the binary with a Patch request
 3. Update the dc:title of the binary with a Patch request
 
-### transactionTest
+### TransactionTest
 1. Create a transaction
 2. Get the status of the transaction
 3. Create a container in the transaction
@@ -105,7 +110,7 @@ mvn clean -Dtest=fcrepo4TestSuite test
 12. Rollback the transaction
 13. Verify the container is still **not** available outside the transaction
 
-### versionTest
+### VersionTest
 1. Create a container
 2. Check for versions of the container
 3. Create a version of the container (version1)

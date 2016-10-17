@@ -7,7 +7,6 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.Properties;
 
-import org.apache.http.HttpStatus;
 import org.fcrepo.client.DeleteBuilder;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
@@ -15,6 +14,8 @@ import org.fcrepo.client.FcrepoResponse;
 import org.fcrepo.client.GetBuilder;
 import org.fcrepo.client.PatchBuilder;
 import org.fcrepo.client.PutBuilder;
+
+import org.apache.http.HttpStatus;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -23,7 +24,7 @@ import org.junit.Test;
  * @author ylchen
  * @since 2016-09-06
  */
-public class authzTest {
+public class AuthzTest {
 
     String fedoraBaseURL;
 

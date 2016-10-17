@@ -1,6 +1,7 @@
 /**
  *
  */
+
 package org.fcrepo.test.suite;
 
 import static org.junit.Assert.assertEquals;
@@ -10,17 +11,19 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.Properties;
 
-import org.apache.http.HttpStatus;
-import org.apache.jena.query.QueryExecution;
-import org.apache.jena.query.QueryExecutionFactory;
-import org.apache.jena.query.QuerySolution;
-import org.apache.jena.query.ResultSet;
-import org.apache.jena.rdf.model.RDFNode;
 import org.fcrepo.client.DeleteBuilder;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
 import org.fcrepo.client.PutBuilder;
+
+import org.apache.http.HttpStatus;
+import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.common.SolrDocumentList;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -29,11 +32,11 @@ import org.junit.Test;
  * @author ylchen
  * @since 2016-09-06
  */
-public class fusekiTest {
+public class SolrTest {
 
     String fedoraBaseURL;
     String fedoraAdminPassword = "";
-    String fusekiURL;
+    String solrURL;
     FcrepoClient testClient;
     int waitingtime;
 
@@ -47,20 +50,20 @@ public class fusekiTest {
 
         p.load(configFile);
         fedoraBaseURL = p.get("fedoraBaseURL").toString();
-        fusekiURL = p.get("fusekiURL").toString();
+        solrURL = p.get("solrURL").toString();
         fedoraAdminPassword = p.get("fedoraadminpassword").toString();
         testClient = FcrepoClient.client().credentials("fedoraAdmin", fedoraAdminPassword).build();
         waitingtime = Integer.valueOf(System.getProperty("waitingtime"));
-
     }
 
     @Test
-    public void testFuseki() throws IOException, FcrepoOperationFailedException, InterruptedException {
+    public void testSolr() throws SolrServerException, IOException, FcrepoOperationFailedException,
+    InterruptedException {
 
         // Create a container
         final InputStream turtleFile = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("object.ttl");
-        final URI object1Uri = URI.create(fedoraBaseURL + "/object1");
+        final URI object1Uri = URI.create(fedoraBaseURL + "/solrObject");
 
         try (FcrepoResponse response = new PutBuilder(object1Uri, testClient)
                 .body(turtleFile, "text/turtle")
@@ -68,22 +71,18 @@ public class fusekiTest {
             assertEquals(HttpStatus.SC_CREATED, response.getStatusCode());
         }
 
+        // Search that container in the Solr server
         Thread.sleep(waitingtime);
-        final String query =
-                "SELECT ?subject WHERE { ?subject ?predicate <http://www.w3.org/ns/ldp#Container> . FILTER (?subject = <http://localhost:8080/fcrepo/rest/object1>) }";
 
-        final QueryExecution q = QueryExecutionFactory.sparqlService(fusekiURL,
-                query);
-        final ResultSet results = q.execSelect();
+        final SolrClient solr = new HttpSolrClient.Builder(solrURL).build();
 
-        // Query that container in the Fuseki server
-        while (results.hasNext()) {
+        final SolrQuery query = new SolrQuery();
+        query.set("q", "id:\"http://localhost:8080/fcrepo/rest/solrObject\"");
 
-            final QuerySolution soln = results.nextSolution();
-            final RDFNode x = soln.get("subject");
+        final QueryResponse solrResponse = solr.query(query);
+        final SolrDocumentList list = solrResponse.getResults();
 
-            assertEquals("http://localhost:8080/fcrepo/rest/object1", x.toString());
-        }
+        assertEquals(1, list.size());
 
         // Delete a container
         try (FcrepoResponse response = new DeleteBuilder(object1Uri, testClient)
@@ -92,7 +91,7 @@ public class fusekiTest {
         }
 
         // Delete object1 container permanently
-        final URI object1TombstoneUri = URI.create(fedoraBaseURL + "/object1/fcr:tombstone");
+        final URI object1TombstoneUri = URI.create(fedoraBaseURL + "/solrObject/fcr:tombstone");
 
         try (FcrepoResponse response = new DeleteBuilder(object1TombstoneUri, testClient)
                 .perform()) {
